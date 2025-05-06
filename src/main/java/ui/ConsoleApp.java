@@ -4,9 +4,12 @@ import exception.MedicationNotFoundException;
 import model.Medication;
 import service.InventoryService;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
+
 
 public class ConsoleApp {
     public static void main(String[] args) {
@@ -26,7 +29,7 @@ public class ConsoleApp {
             System.out.println("6. Показати прострочені медикаменти");
             System.out.println("7. Сортувати за кількістю (за спаданням)");
             System.out.println("8. Сортувати за датою придатності");
-            System.out.println("9. Обробити медикаменти паралельно");
+            System.out.println("9. Зберегти медикаменти у файл");
             System.out.println("0. Вихід");
             System.out.print("Оберіть опцію: ");
 
@@ -95,7 +98,27 @@ public class ConsoleApp {
                     inventoryService.sortByExpirationDate();
                     break;
                 case 9:
-                    inventoryService.processMedicationsInParallel();
+                    List<Medication> medsToSave = inventoryService.getMedications();
+                    try (FileWriter writer = new FileWriter("medications.csv")) {
+                        writer.write("\uFEFF");
+
+                        // Заголовки
+                        writer.write("ID;Назва;Виробник;Кількість;Дата виробництва;Термін придатності\n");
+
+                        for (Medication med : medsToSave) {
+                            writer.write(String.format("%d;%s;%s;%d;%s;%s\n",
+                                    med.getId(),
+                                    med.getName(),
+                                    med.getManufacturer(),
+                                    med.getQuantity(),
+                                    med.getProductionDate(),
+                                    med.getExpirationDate()));
+                        }
+
+                        System.out.println("✅ Дані збережено у medications.csv");
+                    } catch (IOException e) {
+                        System.out.println("❌ Помилка при збереженні: " + e.getMessage());
+                    }
                     break;
                 case 0:
                     running = false;
