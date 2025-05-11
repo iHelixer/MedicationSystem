@@ -1,5 +1,6 @@
 package main;
 
+import dao.MedicationDAO;
 import exception.MedicationNotFoundException;
 import model.Medication;
 import service.InventoryService;
@@ -14,7 +15,8 @@ import java.util.Scanner;
 public class ConsoleApp {
     public static void main(String[] args) {
 
-        InventoryService inventoryService = new InventoryService();
+        MedicationDAO medicationDAO = new MedicationDAO();
+        InventoryService inventoryService = new InventoryService(medicationDAO);
         Scanner scanner = new Scanner(System.in);
 
         boolean running = true;
@@ -34,7 +36,7 @@ public class ConsoleApp {
             System.out.print("Оберіть опцію: ");
 
             int choice = scanner.nextInt();
-            scanner.nextLine(); // consume newline
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
@@ -47,6 +49,10 @@ public class ConsoleApp {
                     String manufacturer = scanner.nextLine();
                     System.out.print("Кількість: ");
                     int quantity = scanner.nextInt();
+                    if (quantity < 0) {
+                        System.out.println("Кількість не може бути від’ємною!");
+                        break;
+                    }
                     System.out.print("Рік придатності: ");
                     int year = scanner.nextInt();
                     System.out.print("Місяць: ");
@@ -98,11 +104,10 @@ public class ConsoleApp {
                     inventoryService.sortByExpirationDate();
                     break;
                 case 9:
-                    List<Medication> medsToSave = inventoryService.getMedications();
+                    List<Medication> medsToSave = inventoryService.getAllMedications();
                     try (FileWriter writer = new FileWriter("medications.csv")) {
                         writer.write("\uFEFF");
 
-                        // Заголовки
                         writer.write("ID;Назва;Виробник;Кількість;Дата виробництва;Термін придатності\n");
 
                         for (Medication med : medsToSave) {

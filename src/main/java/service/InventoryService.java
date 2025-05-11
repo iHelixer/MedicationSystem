@@ -1,76 +1,69 @@
 package service;
 
+import dao.MedicationDAO;
 import exception.MedicationNotFoundException;
 import model.Medication;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class InventoryService {
-    private final List<Medication> medications = new CopyOnWriteArrayList<>();
+    private final MedicationDAO medicationDAO;
+
+    public InventoryService(MedicationDAO medicationDAO) {
+        this.medicationDAO = medicationDAO;
+        this.medicationDAO.createTable(); // створення таблиці при запуску
+    }
 
     public void addMedication(Medication medication) {
-        medications.add(medication);
+        medicationDAO.addMedication(medication);
     }
 
     public void update(Medication medication) {
-        for (int i = 0; i < medications.size(); i++) {
-            if (medications.get(i).getId() == medication.getId()) {
-                medications.set(i, medication);
-                return;
-            }
-        }
+        medicationDAO.updateMedication(medication);
     }
 
     public void removeMedication(int id) throws MedicationNotFoundException {
-        Medication medication = findById(id);
-        medications.remove(medication);
-    }
-
-    public void displayAllMedications() {
-        medications.forEach(System.out::println);
+        Medication med = findById(id);
+        medicationDAO.removeMedication(med);
     }
 
     public Medication findById(int id) throws MedicationNotFoundException {
-        return medications.stream()
-                .filter(m -> m.getId() == id)
-                .findFirst()
-                .orElseThrow(() -> new MedicationNotFoundException("Медикамент з id " + id + " не знайдено."));
+        Optional<Medication> optional = medicationDAO.getMedicationById(id);
+        return optional.orElseThrow(() -> new MedicationNotFoundException("Медикамент з ID " + id + " не знайдено."));
     }
 
     public List<Medication> search(String keyword) {
-        return medications.stream()
-                .filter(m -> m.getName().toLowerCase().contains(keyword.toLowerCase()) ||
-                        m.getManufacturer().toLowerCase().contains(keyword.toLowerCase()))
-                .collect(Collectors.toList());
-    }
-
-    public List<Medication> getMedications() {
-        return new ArrayList<>(medications);
+        return medicationDAO.searchMedications(keyword);
     }
 
     public List<Medication> getExpiredMedications() {
-        return medications.stream()
-                .filter(med -> med.getExpirationDate().isBefore(LocalDate.now()))
-                .collect(Collectors.toList());
+        return medicationDAO.getExpiredMedications();
+    }
+
+    public void displayAllMedications() {
+        List<Medication> all = getAllMedications();
+        all.forEach(System.out::println);
+    }
+
+    public List<Medication> getAllMedications() {
+        return medicationDAO.getAllMedications();
     }
 
     public void sortByQuantityDescending() {
-        medications.sort(Comparator.comparingInt(Medication::getQuantity).reversed());
-        displayAllMedications();
+        getAllMedications().stream()
+                .sorted((a, b) -> Integer.compare(b.getQuantity(), a.getQuantity()))
+                .forEach(System.out::println);
     }
 
     public void sortByExpirationDate() {
-        medications.sort(Comparator.comparing(Medication::getExpirationDate));
-        displayAllMedications();
+        getAllMedications().stream()
+                .sorted((a, b) -> a.getExpirationDate().compareTo(b.getExpirationDate()))
+                .forEach(System.out::println);
     }
 
     public void processMedicationsInParallel() {
-        medications.parallelStream().forEach(med ->
-                System.out.println("Обробка медикаменту: " + med.getName() + " (ID: " + med.getId() + ")"));
+        getAllMedications().parallelStream()
+                .forEach(med -> System.out.println("Обробка медикаменту: " + med.getName()));
     }
 }
