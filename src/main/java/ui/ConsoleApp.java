@@ -43,6 +43,12 @@ public class ConsoleApp {
                     System.out.print("Введіть id: ");
                     int id = scanner.nextInt();
                     scanner.nextLine();
+                    try {
+                        inventoryService.findById(id);
+                        System.out.println("Медикамент з таким ID вже існує!");
+                        break;
+                    } catch (MedicationNotFoundException ignored) {
+                    }
                     System.out.print("Назва: ");
                     String name = scanner.nextLine();
                     System.out.print("Виробник: ");

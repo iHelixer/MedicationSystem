@@ -1,5 +1,8 @@
 package model;
 
+import java.time.LocalDate;
+
 public interface Expirable {
-    void expire();
+    boolean isExpired();
+    LocalDate getExpirationDate();
 }

@@ -12,7 +12,7 @@ public class InventoryService {
 
     public InventoryService(MedicationDAO medicationDAO) {
         this.medicationDAO = medicationDAO;
-        this.medicationDAO.createTable(); // створення таблиці при запуску
+        this.medicationDAO.createTable();
     }
 
     public void addMedication(Medication medication) {

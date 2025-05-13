@@ -1,5 +1,7 @@
 package model;
 
 public interface Storable {
-    void store();
+    int getId();
+    String getName();
+    int getQuantity();
 }

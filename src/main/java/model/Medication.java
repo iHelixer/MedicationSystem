@@ -3,7 +3,7 @@ package model;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public class Medication {
+public class Medication implements Storable, Expirable {
     private int id;
     private String name;
     private String manufacturer;
@@ -21,10 +21,12 @@ public class Medication {
     }
 
     // Геттери і сеттери
+    @Override
     public int getId() {
         return id;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -33,6 +35,7 @@ public class Medication {
         return manufacturer;
     }
 
+    @Override
     public int getQuantity() {
         return quantity;
     }
@@ -41,16 +44,18 @@ public class Medication {
         return productionDate;
     }
 
+    @Override
+    public boolean isExpired() {
+        return expirationDate.isBefore(LocalDate.now());
+    }
+
+    @Override
     public LocalDate getExpirationDate() {
         return expirationDate;
     }
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
-    }
-
-    public void setProductionDate(LocalDate productionDate) {
-        this.productionDate = productionDate;
     }
 
     public void setExpirationDate(LocalDate expirationDate) {
